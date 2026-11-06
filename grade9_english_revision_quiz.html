@@ -22,19 +22,52 @@ input.answer{width:100%;margin-top:13px;padding:12px 13px;border:1px solid var(-
 .feedback{margin-top:12px;padding:11px 13px;border-radius:9px;font-size:13px;background:#1c2940;color:var(--muted)}.feedback.good{border:1px solid #276b53;color:#a8f0d0}.feedback.bad{border:1px solid #78414a;color:#ffc0c4}.feedback.manual{border:1px solid #705b2e;color:#f5d995}
 .answerkey{display:none;margin-top:9px;color:#b9c7df;font-size:13px}.answerkey.show{display:block}
 .hidden{display:none!important}.result{padding:20px;border:1px solid #4c4385;background:#1d1a3b;border-radius:16px;margin:18px 0}.result strong{font-size:28px}
-footer{color:var(--muted);font-size:12px;margin-top:30px}.pill{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:4px 8px;border-radius:20px}
+/* Student Modal Overlay */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(7,11,22,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:#121a2d;border:1px solid var(--line);border-radius:20px;padding:30px;width:90%;max-width:450px;box-shadow:0 20px 50px rgba(0,0,0,0.5)}
+.modal h2{margin-top:0;color:#fff;font-size:24px}
+.modal p{color:var(--muted);font-size:14px;margin-bottom:20px}
+.form-group{margin-bottom:15px}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#c9c2ff}
+.form-group input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0d1526;color:var(--text);font:inherit}
+.student-badge{background:#1f2942;padding:6px 12px;border-radius:8px;font-size:13px;color:#b9afff;display:inline-block;margin-bottom:10px}
+footer{color:var(--muted);font-size:12px;margin-top:30px}
 @media(max-width:650px){.options{grid-template-columns:1fr}.card{padding:15px}.toolbar{gap:7px}.stats{width:100%}}
 </style>
 </head>
 <body>
+
+<!-- Student Info Modal -->
+<div id="modalOverlay" class="modal-overlay">
+ <div class="modal">
+  <h2>Welcome to the Quiz</h2>
+  <p>Please enter your details before starting the revision practice.</p>
+  <div class="form-group">
+   <label for="studentName">Full Name:</label>
+   <input type="text" id="studentName" placeholder="e.g., Nguyen Van A" required>
+  </div>
+  <div class="form-group">
+   <label for="studentClass">Class / Group:</label>
+   <input type="text" id="studentClass" placeholder="e.g., Grade 9A" required>
+  </div>
+  <button id="startBtn" style="width:100%;margin-top:10px;padding:12px;">Start Quiz</button>
+ </div>
+</div>
+
 <header>
  <span class="tag">GLOBAL SUCCESS · UNITS 1–3 · ACADEMIC YEAR 2026–2027</span>
  <h1>Grade 9 English<br>Mid-Term Revision Quiz</h1>
  <p>Full practice set from the uploaded revision outline · Questions 1–83</p>
 </header>
+
 <div class="shell">
+ <div id="userInfoBar" class="hidden" style="margin-bottom:15px;">
+  <span class="student-badge" id="displayStudentInfo"></span>
+ </div>
  <div class="toolbar">
-  <button id="checkBtn">Check answers</button><button class="secondary" id="revealBtn">Show answer key</button><button class="secondary" id="resetBtn">Reset</button>
+  <button id="checkBtn">Submit & Send Results</button>
+  <button class="secondary" id="revealBtn">Show answer key</button>
+  <button class="secondary" id="resetBtn">Reset</button>
   <div class="progress-wrap"><div class="progress" id="progress"></div></div>
   <span class="stats" id="stats">0 / 83 answered</span>
  </div>
@@ -47,15 +80,35 @@ footer{color:var(--muted);font-size:12px;margin-top:30px}.pill{font-size:12px;co
  <div id="quiz"></div>
  <div id="result" class="result hidden"></div>
  <footer>
-  Source coverage: every question visible in the uploaded file (1–83). The document heading says Questions 56–85, but the supplied file contains only questions 56–83; questions 84–85 are not present. Questions 1–10 have no visible underlining/stress markings in the document, so they are included but require manual checking. Question 35 and some error-identification wording are also flagged for manual review where the source is ambiguous or internally inconsistent.
+  Source coverage: every question visible in the uploaded file (1–83). Submitting records your name, class, score, and individual answers directly to your teacher's email inbox.
  </footer>
 </div>
+
 <script>
 const DATA = {"mc": [[1, "Phonetics", "Choose the word whose underlined part differs in pronunciation.", ["advice", "facility", "artisan", "attract"], null], [2, "Phonetics", "Choose the word whose underlined part differs in pronunciation.", ["park", "fast", "around", "cart"], null], [3, "Phonetics", "Choose the word whose underlined part differs in pronunciation.", ["cent", "craft", "culture", "counsellor"], null], [4, "Phonetics", "Choose the word whose underlined part differs in pronunciation.", ["due", "dust", "suburb", "study"], null], [5, "Phonetics", "Choose the word whose underlined part differs in pronunciation.", ["close", "local", "model", "post"], null], [6, "Stress", "Choose the word with a different primary stress pattern.", ["counsellor", "suburb", "pottery", "tradition"], null], [7, "Stress", "Choose the word with a different primary stress pattern.", ["facility", "attraction", "artisan", "priority"], null], [8, "Stress", "Choose the word with a different primary stress pattern.", ["preserve", "publish", "manage", "suffer"], null], [9, "Stress", "Choose the word with a different primary stress pattern.", ["adolescence", "liveable", "physical", "regular"], null], [10, "Stress", "Choose the word with a different primary stress pattern.", ["community", "emotional", "concentration", "environment"], null], [11, "Vocabulary & Grammar", "Tay Ho village in Hue is a famous tourist ______ known for its traditional conical hat making.", ["attract", "attraction", "attractive", "attractively"], "B"], [12, "Vocabulary & Grammar", "The brave firefighters rushed into the burning building to ______ out the fire immediately.", ["put", "stop", "bring", "prevent"], "A"], [13, "Vocabulary & Grammar", "Elena submitted her English assignment long before the ______ date.", ["recent", "due", "time", "old"], "B"], [14, "Vocabulary & Grammar", "They wrap the final product in two layers of leaves to preserve its ______.", ["noise", "darkness", "fragrance", "distance"], "C"], [15, "Vocabulary & Grammar", "Would you mind ______ the heavy table for me?", ["carry", "carrying", "to carry", "carried"], "B"], [16, "Vocabulary & Grammar", "School counsellors can give students valuable advice ______ managing stress.", ["on", "with", "at", "for"], "A"], [17, "Vocabulary & Grammar", "The ______ you work, the ______ successful you get.", ["harder; more", "hard; more", "harder; most", "hardest; more"], "A"], [18, "Vocabulary & Grammar", "Lan asked her mother where ______ out with her classmates at weekends.", ["hang", "hanging", "to hang", "hung"], "C"], [19, "Vocabulary & Grammar", "Local artisans try hard to ______ their traditional crafts for future generations.", ["destroy", "preserve", "ignore", "forget"], "B"], [20, "Vocabulary & Grammar", "It is necessary to decide whether we should ______ priority to work or study.", ["make", "do", "give", "take"], "C"], [21, "Vocabulary & Grammar", "Bat Trang is one of the most famous ______ villages in Viet Nam.", ["pottery", "silk", "conical hat", "lantern"], "A"], [22, "Vocabulary & Grammar", "When we aren't at home, our kind neighbors ______ our dog.", ["look for", "take care of", "hand out", "put off"], "B"], [23, "Vocabulary & Grammar", "Doing physical exercise releases endorphins, which help ______ anxiety and depression.", ["increase", "reduce", "cause", "create"], "B"], [24, "Vocabulary & Grammar", "Using smartphones right before bedtime can disturb sleep because of ______ light.", ["blue", "red", "green", "yellow"], "A"], [25, "Vocabulary & Grammar", "Millbrook is a very ______ town with clean air and friendly residents.", ["live", "liveable", "life", "lived"], "B"], [26, "Vocabulary & Grammar", "Choose the word CLOSEST in meaning to “fragrance”.", ["unpleasant smell", "pleasant smell", "bad taste", "soft touch"], "B"], [27, "Vocabulary & Grammar", "Choose the word CLOSEST in meaning to “sufficient”.", ["enough", "rare", "short", "light"], "A"], [28, "Vocabulary & Grammar", "Choose the word OPPOSITE in meaning to “take care of”.", ["look after", "ignore", "search for", "guard"], "B"], [29, "Vocabulary & Grammar", "Choose the word OPPOSITE in meaning to “limited”.", ["restricted", "reduced", "increased", "controlled"], "C"], [30, "Vocabulary & Grammar", "Choose the word CLOSEST in meaning to “guidance”.", ["money", "advice", "food", "punishment"], "B"], [31, "Communication", "Mai: “Would you like me to open the window for you?” — Nam: ______", ["Yes, please. That would be great.", "Not at all.", "I beg your pardon.", "You're welcome."], "A"], [32, "Communication", "Phong: “How about visiting Van Phuc silk village this Saturday?” — Linh: ______", ["That sounds like a great idea!", "No, I don't care.", "Yes, I do.", "You're right."], "A"], [33, "Communication", "Nick: “I am feeling very stressed about the upcoming exams.” — Counsellor: ______", ["You should create a study schedule and take breaks.", "That's fine.", "Never mind.", "Congratulations!"], "A"], [34, "Communication", "Linh: “Would you mind showing me how to make a pottery vase?” — Artisan: ______", ["Not at all. I'd be happy to help.", "Yes, I would.", "No, thanks.", "You are welcome."], "A"], [35, "Communication", "Hoa: “Thank you for helping us clean up the neighborhood park.” — Minh: ______", ["It's my pleasure.", "You're wrong.", "Yes, let's.", "No problem at all."], null], [36, "Error Identification", "Identify the part that needs correction: “It is necessary to decide whether we should give priority to work or study.”", ["A. do (instead of give)", "B. to", "C. or", "D. No error"], null], [37, "Error Identification", "Identify the part that needs correction: “The harder you study, the higher marks you will achieve.”", ["A. The more hard → harder", "B. the higher", "C. will achieve", "D. No error"], null], [38, "Error Identification", "Identify the part that needs correction: “Linh wondered what to do to stop to argue with her older sister.”", ["A. what to do", "B. stop to argue", "C. older sister", "D. No error"], "B"], [39, "Error Identification", "Identify the part that needs correction: “We got around Bat Trang pottery village by bicycle last weekend.”", ["A. got around", "B. by bicycle", "C. last weekend", "D. No error"], "D"], [40, "Error Identification", "Identify the part that needs correction: “Tay Ho village is a fame tourist attraction in Hue City.”", ["A. fame", "B. attraction", "C. Hue City", "D. No error"], "A"], [41, "Cloze Reading — Passage 1", "Visitors can see the weaving process ______ in the local workshops.", ["directly", "direct", "direction", "director"], "A"], [42, "Cloze Reading — Passage 1", "Local artisans try hard to ______ their traditional techniques.", ["preserve", "destroy", "replace", "forget"], "A"], [43, "Cloze Reading — Passage 1", "Tourists learn about the cultural ______ of the craft.", ["heritage", "building", "distance", "problem"], "A"], [44, "Cloze Reading — Passage 1", "Making silk is a way to build community ______ among residents.", ["spirit", "noise", "conflict", "anxiety"], "A"], [45, "Cloze Reading — Passage 1", "Van Phuc silk village is definitely a place of interest you ______ miss.", ["shouldn't", "must", "can", "should"], "A"], [46, "Cloze Reading — Passage 2", "Experts advise students to give ______ to their health.", ["priority", "money", "trouble", "punishment"], "A"], [47, "Cloze Reading — Passage 2", "Students should submit assignments before the ______ date.", ["due", "old", "past", "recent"], "A"], [48, "Cloze Reading — Passage 2", "Talking to a school ______ or parents can provide valuable guidance.", ["counsellor", "doctor", "artisan", "firefighter"], "A"], [49, "Cloze Reading — Passage 2", "Physical activities help release endorphins and reduce ______.", ["anxiety", "happiness", "pleasure", "strength"], "A"], [50, "Cloze Reading — Passage 2", "Enough rest allows the mind to ______ and stay sharp.", ["recharge", "suffer", "increase", "disturb"], "A"], [51, "Reading Comprehension", "What is the primary focus of the passage about adolescence and healthy habits?", ["The history of traditional craft villages.", "Essential habits for teenagers to maintain health and manage stress.", "How to become a school counsellor.", "The negative effects of sports on young children."], "B"], [52, "Reading Comprehension", "Why is regular physical exercise recommended for teenagers?", ["It helps teens earn extra money.", "It releases endorphins that reduce anxiety and stress.", "It allows teens to stay up late without getting tired.", "It completely replaces the need for a balanced diet."], "B"], [53, "Reading Comprehension", "What does “sufficient” mean in paragraph 2?", ["inadequate", "enough", "excessive", "rare"], "B"], [54, "Reading Comprehension", "Why does using smartphones late at night disturb sleep?", ["Blue light affects melatonin production and sleep patterns.", "Smartphones make too much noise.", "Teens spend too much money on apps.", "It prevents physical growth."], "A"], [55, "Reading Comprehension", "Which statement is NOT supported by the passage?", ["Teenagers need between 8 and 10 hours of sleep each night.", "School counsellors can help students manage academic pressure.", "Consuming excessive fast food is recommended for mental focus.", "Physical exercise strengthens both body and mind."], "C"]], "written": [[56, "Sentence Rearrangement", "on / can give / School counsellors / students / valuable advice / managing stress.", "School counsellors can give students valuable advice on managing stress."], [57, "Sentence Rearrangement", "to preserve / try hard / Local artisans / their / traditional crafts.", "Local artisans try hard to preserve their traditional crafts."], [58, "Sentence Rearrangement", "Bat Trang pottery village / We / got around / last weekend / by bicycle.", "We got around Bat Trang pottery village by bicycle last weekend."], [59, "Sentence Rearrangement", "The / hard / you / study, / the / high / marks / you / achieve.", "The harder you study, the higher marks you achieve."], [60, "Sentence Rearrangement", "asked / Lan / where / to hang out / her sister / with.", "Lan asked where to hang out with her sister."], [61, "Sentence Rearrangement", "rushing / The firefighters / into / put out / the burning house / to / the fire.", "The firefighters were rushing into the burning house to put out the fire."], [62, "Sentence Rearrangement", "give / It / to / is / necessary / priority / health / to.", "It is necessary to give priority to health."], [63, "Sentence Rearrangement", "long before / submitted / Her assignment / Elena / the due date.", "Elena submitted her assignment long before the due date."], [64, "Sentence Rearrangement", "releasing / Exercise / helps / endorphins / stress / to reduce.", "Exercise helps reduce stress by releasing endorphins."], [65, "Sentence Rearrangement", "community spirit / Millbrook / a strong sense of / boasts / among residents.", "Millbrook boasts a strong sense of community spirit among residents."], [66, "Word Form", "Tay Ho village is a famous tourist ______ known for conical hat making. (ATTRACT)", "attraction"], [67, "Word Form", "The ______ try hard to preserve traditional weaving techniques. (ARTISAN)", "artisans"], [68, "Verb Form", "Would you mind ______ (carry) this heavy box for the elderly?", "carrying"], [69, "Word Form", "The harder they work, the ______ (successful) they get.", "more successful"], [70, "Word Form", "Teenagers should learn how to manage stress ______. (EFFECTIVE)", "effectively"], [71, "Verb Form", "We ______ (visit) Bat Trang pottery village last weekend.", "visited"], [72, "Word Form", "Doing volunteer work builds a sense of ______ among youths. (RESPONSIBLE)", "responsibility"], [73, "Verb Form", "Using smartphones late at night ______ (disturb) sleep patterns.", "disturbs"], [74, "Verb Form", "Linh wondered what ______ (do) to stop arguing with her sister.", "to do"], [75, "Word Form", "Millbrook is a very ______ (live) town with beautiful landscapes.", "liveable"], [76, "Sentence Transformation", "“Where can I hang out with my sister?” Lan asked. → Lan asked where ______.", "to hang out with her sister"], [77, "Sentence Transformation", "“What should I do to stop arguing with my sister?” Linh wondered. → Linh wondered what ______.", "to do to stop arguing with her sister"], [78, "Sentence Transformation", "Wear a warm coat or you may catch a cold. (come down) → If you do not wear a warm coat, ______.", "you may come down with a cold"], [79, "Sentence Transformation", "As you study harder, you achieve higher marks. → The harder ______.", "you study, the higher marks you achieve"], [80, "Sentence Transformation", "When my parents are away, our neighbors look after our cat. → When my parents are away, our neighbors take ______.", "care of our cat"], [81, "Sentence Transformation", "The brave firefighters rushed into the house to extinguish the fire. → The brave firefighters rushed into the house to put ______.", "out the fire"], [82, "Sentence Transformation", "It is necessary to give priority to health over work. → We should ______.", "give priority to health over work"], [83, "Sentence Transformation", "Elena submitted her assignment much earlier than the deadline. → Elena submitted her assignment long before ______.", "the deadline"]], "passages": [{"title": "Passage 1 — Preserving Traditional Crafts", "text": "Van Phuc village in Ha Noi is famous for its traditional silk weaving craft. The village has a long history of making high-quality silk, which is well-known for its lightness and durability. Visitors can see the weaving process (41) ______ in the local workshops. The craftsmen use natural dyes to give the threads vibrant colours. Despite the development of modern industry, local artisans try hard to (42) ______ their traditional techniques. Every year, thousands of tourists visit Van Phuc to buy silk products and learn about the cultural (43) ______ of the craft. Making silk is not only a source of income but also a way to build community (44) ______ among residents. If you have a chance to visit Ha Noi, Van Phuc silk village is definitely a place of interest you (45) ______ miss."}, {"title": "Passage 2 — Stress Management in Adolescence", "text": "Adolescence is a time of rapid physical and emotional growth. Teenagers often face academic pressure and personal challenges, which can lead to high stress levels. To manage stress effectively, experts advise students to give (46) ______ to their health. First, they should plan their study time well so that they can submit assignments before the (47) ______ date. Second, talking to a school (48) ______ or parents can provide valuable guidance when feeling overwhelmed. Third, participating in physical activities like playing sports helps release endorphins and reduce (49) ______. Finally, taking enough rest and avoiding blue light from screens before sleeping allows the mind to (50) ______ and stay sharp."}, {"title": "Reading Comprehension — Healthy Habits in Adolescence", "text": "Adolescence is a crucial stage of human development where teenagers undergo significant physical and psychological transformations. During this period, developing healthy habits is essential for both academic performance and overall well-being.\\n\\nAccording to health experts, teenagers should focus on three foundational pillars: balanced nutrition, regular physical activity, and adequate sleep. Firstly, a healthy diet rich in fresh fruits, vegetables, proteins, and whole grains provides essential nutrients for brain function. Conversely, excessive consumption of fast food and sugary beverages can lead to fatigue and obesity. Secondly, engaging in sports or aerobic exercise for at least 60 minutes daily stimulates the brain to release endorphins—chemicals that reduce feelings of stress and anxiety. Thirdly, sufficient sleep is vital for memory consolidation and emotional balance. Most teenagers require 8 to 10 hours of quality sleep per night. However, late-night smartphone usage exposes eyes to blue light, which suppresses melatonin production and disrupts sleep patterns.\\n\\nIn addition, when teenagers experience academic pressure, turning to school counsellors or trusted family members can offer practical strategies to manage stress. Balancing study time with creative hobbies in a liveable community environment ensures teens grow into happy and responsible adults."}]};
+
 const letters=["A","B","C","D"];
 const quiz=document.getElementById("quiz");
 const states={};
 let filter="all",checked=false,keysVisible=false;
+let studentInfo = { name: "", group: "" };
+
+// Handle student modal startup
+document.getElementById("startBtn").addEventListener("click", () => {
+  const nameInput = document.getElementById("studentName").value.trim();
+  const classInput = document.getElementById("studentClass").value.trim();
+  if(!nameInput || !classInput) {
+    alert("Please enter both your name and class/group.");
+    return;
+  }
+  studentInfo.name = nameInput;
+  studentInfo.group = classInput;
+  document.getElementById("displayStudentInfo").textContent = `Student: ${studentInfo.name} (${studentInfo.group})`;
+  document.getElementById("userInfoBar").classList.remove("hidden");
+  document.getElementById("modalOverlay").classList.add("hidden");
+  render();
+});
+
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function answered(id){return !!(states[id] && states[id].value && states[id].value.trim());}
 function updateStats(){
@@ -65,6 +118,7 @@ function updateStats(){
  document.getElementById("progress").style.width=`${count/total*100}%`;
 }
 function passageFor(n){if(n>=41&&n<=45)return DATA.passages[0];if(n>=46&&n<=50)return DATA.passages[1];if(n>=51&&n<=55)return DATA.passages[2];return null}
+
 function makeCard(q,isWritten=false){
  const [n,category,prompt,opts,key]=q;
  const selected=states[n]?.value||"";
@@ -72,7 +126,7 @@ function makeCard(q,isWritten=false){
  if(isWritten){
   inner=`<input class="answer" data-id="${n}" placeholder="Type your answer here…" value="${esc(selected)}">`;
   inner+=`<div class="answerkey ${keysVisible?"show":""}" id="key-${n}"><b>Suggested answer:</b> ${esc(key)}</div>`;
-  if(checked){inner+=`<div class="feedback manual">Written response — compare your answer with the suggested answer. Equivalent correct wording may also be accepted.</div>`}
+  if(checked){inner+=`<div class="feedback manual">Written response — compared against suggested answer.</div>`}
  }else{
   inner=`<div class="options">${opts.map((o,i)=>`<button class="option ${selected===letters[i]?"selected":""}" data-id="${n}" data-value="${letters[i]}"><span class="letter">${letters[i]}.</span><span>${esc(o)}</span></button>`).join("")}</div>`;
   if(checked){
@@ -80,7 +134,7 @@ function makeCard(q,isWritten=false){
     const ok=selected===key;
     inner+=`<div class="feedback ${ok?"good":"bad"}">${!selected?"Not answered.":ok?"Correct.":"Not quite."} ${ok?"":`Expected answer: ${key}.`}</div>`;
    }else{
-    inner+=`<div class="feedback manual">Manual review needed: the source document does not provide enough reliable marking information for this item. Check the original lesson or teacher’s key.</div>`;
+    inner+=`<div class="feedback manual">Manual review item.</div>`;
    }
   }
  }
@@ -92,6 +146,7 @@ function makeCard(q,isWritten=false){
   ${reading}${inner}
  </article>`;
 }
+
 function render(){
  let html="";
  const mc=DATA.mc.filter(q=>filter==="all"||filter==="mc"||(filter==="unanswered"&&!answered(q[0])));
@@ -110,20 +165,50 @@ function render(){
  }));
  updateStats();
 }
+
+// Submit and send results to Google Apps Script
 document.getElementById("checkBtn").addEventListener("click",()=>{
  checked=true;keysVisible=false;render();
  let correct=0,gradable=0,manual=0;
  DATA.mc.forEach(q=>{if(q[4]){gradable++;if(states[q[0]]?.value===q[4])correct++;}else manual++;});
+ 
  document.getElementById("result").classList.remove("hidden");
- document.getElementById("result").innerHTML=`<strong>${correct} / ${gradable}</strong><br>Auto-graded multiple-choice questions with available answer keys. ${manual} multiple-choice items need manual review. Written answers are self-checked against suggested responses.`;
+ document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>Auto-graded multiple choice completed. Submitting answers to teacher...`;
+ 
+ // Prepare payload
+ const payload = {
+   name: studentInfo.name,
+   class: studentInfo.group,
+   score: `${correct} / ${gradable}`,
+   answers: states
+ };
+
+ // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzCAnXQUclKHFTWylm1zXzMJoYUYLJ1NLi8yt5YPRZpa_Rj0ksNhYkHwPCZR-DK5nuo/exec";
+
+ if(WEB_APP_URL !== "https://script.google.com/macros/s/AKfycbzCAnXQUclKHFTWylm1zXzMJoYUYLJ1NLi8yt5YPRZpa_Rj0ksNhYkHwPCZR-DK5nuo/exec") {
+   fetch(WEB_APP_URL, {
+     method: "POST",
+     mode: "no-cors",
+     headers: { "Content-Type": "application/json" },
+     body: JSON.stringify(payload)
+   }).then(() => {
+     document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>✅ Your results have been successfully sent to your teacher (${studentInfo.name})!`;
+   }).catch(err => {
+     document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>⚠️ Could not automatically send results. Please show this score screen to your teacher.`;
+   });
+ } else {
+   document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>ℹ️ Quiz graded locally! (To enable email submissions, connect your Google Apps Script Web App URL in the code).`;
+ }
+
  document.getElementById("result").scrollIntoView({behavior:"smooth",block:"center"});
 });
+
 document.getElementById("revealBtn").addEventListener("click",()=>{keysVisible=!keysVisible;render();});
 document.getElementById("resetBtn").addEventListener("click",()=>{if(confirm("Clear all your answers and restart?")){Object.keys(states).forEach(k=>delete states[k]);checked=false;keysVisible=false;document.getElementById("result").classList.add("hidden");render();}});
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");filter=t.dataset.filter;render();
 }));
-render();
 </script>
 </body>
 </html>
