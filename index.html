@@ -64,13 +64,18 @@ footer{color:var(--muted);font-size:12px;margin-top:30px}
  <div id="userInfoBar" class="hidden" style="margin-bottom:15px;">
   <span class="student-badge" id="displayStudentInfo"></span>
  </div>
+ 
  <div class="toolbar">
   <button id="checkBtn">Submit & Send Results</button>
   <button class="secondary" id="revealBtn">Show answer key</button>
   <button class="secondary" id="resetBtn">Reset</button>
+  <!-- Developer Autofill Button -->
+  <button class="secondary" id="devFillBtn" style="border-color:#7568c5; color:#c9c2ff;" title="Developer Autofill">⚡ Dev Autofill</button>
+  
   <div class="progress-wrap"><div class="progress" id="progress"></div></div>
   <span class="stats" id="stats">0 / 83 answered</span>
  </div>
+
  <div class="tabs" id="tabs">
   <button class="tab active" data-filter="all">All questions</button>
   <button class="tab" data-filter="mc">Multiple choice (1–55)</button>
@@ -166,6 +171,32 @@ function render(){
  updateStats();
 }
 
+// Developer Autofill Shortcut Button
+document.getElementById("devFillBtn").addEventListener("click", () => {
+  const secret = prompt("Enter developer passcode:");
+  // Change "secret123" to whatever secret word you want
+  if (secret === "secret123") {
+    if (!studentInfo.name) {
+      studentInfo.name = "Test Student (Dev)";
+      studentInfo.group = "Grade 9 Dev";
+      document.getElementById("displayStudentInfo").textContent = `Student: ${studentInfo.name} (${studentInfo.group})`;
+      document.getElementById("userInfoBar").classList.remove("hidden");
+    }
+    DATA.mc.forEach(q => {
+      const [n, category, promptText, opts, key] = q;
+      states[n] = { value: key || "A" };
+    });
+    DATA.written.forEach(q => {
+      const [n, category, promptText, key] = q;
+      states[n] = { value: key || "Sample answer" };
+    });
+    render();
+    alert("⚡ Developer mode: All 83 questions auto-filled! You can now test 'Submit & Send Results'.");
+  } else if (secret !== null) {
+    alert("Incorrect passcode.");
+  }
+});
+
 // Submit and send results to Google Apps Script
 document.getElementById("checkBtn").addEventListener("click",()=>{
  checked=true;keysVisible=false;render();
@@ -175,7 +206,6 @@ document.getElementById("checkBtn").addEventListener("click",()=>{
  document.getElementById("result").classList.remove("hidden");
  document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>Auto-graded multiple choice completed. Submitting answers to teacher...`;
  
- // Prepare payload
  const payload = {
    name: studentInfo.name,
    class: studentInfo.group,
@@ -183,22 +213,21 @@ document.getElementById("checkBtn").addEventListener("click",()=>{
    answers: states
  };
 
- // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzCAnXQUclKHFTWylm1zXzMJoYUYLJ1NLi8yt5YPRZpa_Rj0ksNhYkHwPCZR-DK5nuo/exec";
 
- if(WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+ if(WEB_APP_URL && WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
    fetch(WEB_APP_URL, {
      method: "POST",
      mode: "no-cors",
      headers: { "Content-Type": "application/json" },
      body: JSON.stringify(payload)
    }).then(() => {
-     document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>✅ Your results have been successfully sent to your teacher (${studentInfo.name})!`;
+     document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>✅ Your results have been successfully sent to your teacher!`;
    }).catch(err => {
-     document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>⚠️ Could not automatically send results. Please show this score screen to your teacher.`;
+     document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>⚠️ Could not automatically send results. Please check your network.`;
    });
  } else {
-   document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>ℹ️ Quiz graded locally! (To enable email submissions, connect your Google Apps Script Web App URL in the code).`;
+   document.getElementById("result").innerHTML=`<strong>Score: ${correct} / ${gradable}</strong><br>ℹ️ Quiz graded locally!`;
  }
 
  document.getElementById("result").scrollIntoView({behavior:"smooth",block:"center"});
